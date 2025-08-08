@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: hms-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - ENVIRONMENT=development
+      - SERVER_PORT=8080
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=hms
+      - DB_SSLMODE=disable
+      - JWT_SECRET=your-secret-key
+      - JWT_EXPIRE_TIME=24
+      - HOSPITAL_A_BASE_URL=https://hospital-a.api.co.th
+    ports:
+      - "8080:8080"
+    networks:
+      - hms-network
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: hms-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    networks:
+      - hms-network
+
+  # Database Service
+  db:
+    image: postgres:18-alpine
+    container_name: hms-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=hms
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - hms-network
+
+networks:
+  hms-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
