@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"github.com/DingDong039/hms/internal/handlers"
 	"github.com/DingDong039/hms/internal/models"
 	"github.com/DingDong039/hms/internal/services"
+	"github.com/DingDong039/hms/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -20,7 +22,7 @@ type MockAuthService struct {
 	mock.Mock
 }
 
-func (m *MockAuthService) CreateStaff(ctx interface{}, req models.StaffCreateRequest) (*models.Staff, error) {
+func (m *MockAuthService) CreateStaff(ctx context.Context, req models.StaffCreateRequest) (*models.Staff, error) {
 	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -28,7 +30,7 @@ func (m *MockAuthService) CreateStaff(ctx interface{}, req models.StaffCreateReq
 	return args.Get(0).(*models.Staff), args.Error(1)
 }
 
-func (m *MockAuthService) Login(ctx interface{}, req models.StaffLoginRequest) (*models.StaffLoginResponse, error) {
+func (m *MockAuthService) Login(ctx context.Context, req models.StaffLoginRequest) (*models.StaffLoginResponse, error) {
 	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -36,12 +38,12 @@ func (m *MockAuthService) Login(ctx interface{}, req models.StaffLoginRequest) (
 	return args.Get(0).(*models.StaffLoginResponse), args.Error(1)
 }
 
-func (m *MockAuthService) ValidateToken(token string) (*models.JWTClaims, error) {
+func (m *MockAuthService) ValidateToken(token string) (*utils.JWTClaims, error) {
 	args := m.Called(token)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.JWTClaims), args.Error(1)
+	return args.Get(0).(*utils.JWTClaims), args.Error(1)
 }
 
 func TestCreateStaff_Success(t *testing.T) {

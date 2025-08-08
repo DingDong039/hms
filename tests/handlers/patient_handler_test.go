@@ -12,6 +12,7 @@ import (
 
 	"github.com/DingDong039/hms/internal/handlers"
 	"github.com/DingDong039/hms/internal/models"
+	"github.com/DingDong039/hms/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,12 +31,12 @@ func (m *MockPatientService) SearchPatient(ctx context.Context, req models.Patie
 	return args.Get(0).(*models.PatientSearchResponse), args.Error(1)
 }
 
-// MockAuthService is a mock implementation of the AuthService interface
-type MockAuthService struct {
+// MockAuthServiceForPatient is a mock implementation of the AuthService interface used in patient handler tests
+type MockAuthServiceForPatient struct {
 	mock.Mock
 }
 
-func (m *MockAuthService) CreateStaff(ctx context.Context, req models.StaffCreateRequest) (*models.Staff, error) {
+func (m *MockAuthServiceForPatient) CreateStaff(ctx context.Context, req models.StaffCreateRequest) (*models.Staff, error) {
 	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -43,7 +44,7 @@ func (m *MockAuthService) CreateStaff(ctx context.Context, req models.StaffCreat
 	return args.Get(0).(*models.Staff), args.Error(1)
 }
 
-func (m *MockAuthService) Login(ctx context.Context, req models.StaffLoginRequest) (*models.StaffLoginResponse, error) {
+func (m *MockAuthServiceForPatient) Login(ctx context.Context, req models.StaffLoginRequest) (*models.StaffLoginResponse, error) {
 	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -51,19 +52,19 @@ func (m *MockAuthService) Login(ctx context.Context, req models.StaffLoginReques
 	return args.Get(0).(*models.StaffLoginResponse), args.Error(1)
 }
 
-func (m *MockAuthService) ValidateToken(token string) (*models.JWTClaims, error) {
+func (m *MockAuthServiceForPatient) ValidateToken(token string) (*utils.JWTClaims, error) {
 	args := m.Called(token)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.JWTClaims), args.Error(1)
+	return args.Get(0).(*utils.JWTClaims), args.Error(1)
 }
 
 func TestSearchPatient_Success(t *testing.T) {
 	// Setup
 	gin.SetMode(gin.TestMode)
 	mockPatientService := new(MockPatientService)
-	mockAuthService := new(MockAuthService)
+	mockAuthService := new(MockAuthServiceForPatient)
 	patientHandler := handlers.NewPatientHandler(mockPatientService, mockAuthService)
 
 	// Create a test router
@@ -78,27 +79,29 @@ func TestSearchPatient_Success(t *testing.T) {
 
 	patientHandler.RegisterRoutes(v1)
 
+	// Stub token validation for auth middleware
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
+
 	// Mock request data
 	reqBody := models.PatientSearchRequest{
 		ID: "1234567890123",
 	}
 	jsonValue, _ := json.Marshal(reqBody)
 
-	// Mock service response
-	mockPatient := &models.Patient{
+	// Mock service response (PatientSearchResponse)
+	mockResponse := &models.PatientSearchResponse{
 		FirstNameTH: "สมชาย",
 		LastNameTH:  "ใจดี",
 		FirstNameEN: "Somchai",
 		LastNameEN:  "Jaidee",
-		DateOfBirth: time.Now(),
+		DateOfBirth: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 		PatientHN:   "HN12345",
 		NationalID:  "1234567890123",
 		PhoneNumber: "0812345678",
 		Email:       "somchai@example.com",
 		Gender:      "M",
-		HospitalID:  1,
 	}
-	mockPatientService.On("SearchPatient", mock.Anything, reqBody, 1).Return(mockPatient, nil)
+	mockPatientService.On("SearchPatient", mock.Anything, reqBody, 1).Return(mockResponse, nil)
 
 	// Create request
 	req, _ := http.NewRequest("POST", "/api/v1/patients/search", bytes.NewBuffer(jsonValue))
@@ -117,13 +120,14 @@ func TestSearchPatient_Success(t *testing.T) {
 
 	// Verify mock
 	mockPatientService.AssertExpectations(t)
+	mockAuthService.AssertExpectations(t)
 }
 
 func TestSearchPatient_NotFound(t *testing.T) {
 	// Setup
 	gin.SetMode(gin.TestMode)
 	mockPatientService := new(MockPatientService)
-	mockAuthService := new(MockAuthService)
+	mockAuthService := new(MockAuthServiceForPatient)
 	patientHandler := handlers.NewPatientHandler(mockPatientService, mockAuthService)
 
 	// Create a test router
@@ -137,6 +141,9 @@ func TestSearchPatient_NotFound(t *testing.T) {
 	})
 
 	patientHandler.RegisterRoutes(v1)
+
+	// Stub token validation for auth middleware
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
 
 	// Mock request data
 	reqBody := models.PatientSearchRequest{
@@ -164,13 +171,14 @@ func TestSearchPatient_NotFound(t *testing.T) {
 
 	// Verify mock
 	mockPatientService.AssertExpectations(t)
+	mockAuthService.AssertExpectations(t)
 }
 
 func TestSearchPatient_ValidationError(t *testing.T) {
 	// Setup
 	gin.SetMode(gin.TestMode)
 	mockPatientService := new(MockPatientService)
-	mockAuthService := new(MockAuthService)
+	mockAuthService := new(MockAuthServiceForPatient)
 	patientHandler := handlers.NewPatientHandler(mockPatientService, mockAuthService)
 
 	// Create a test router
@@ -184,6 +192,9 @@ func TestSearchPatient_ValidationError(t *testing.T) {
 	})
 
 	patientHandler.RegisterRoutes(v1)
+
+	// Stub token validation for auth middleware
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
 
 	// Invalid request (empty ID)
 	reqBody := models.PatientSearchRequest{
@@ -205,4 +216,7 @@ func TestSearchPatient_ValidationError(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.False(t, response.Success)
+
+	// Verify mock
+	mockAuthService.AssertExpectations(t)
 }

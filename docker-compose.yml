@@ -43,12 +43,12 @@ services:
 
   # Database Service
   db:
-    image: postgres:18-alpine
+    image: postgres:latest
     container_name: hms-db
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=HMS@2025
       - POSTGRES_DB=hms
     volumes:
       - postgres_data:/var/lib/postgresql/data

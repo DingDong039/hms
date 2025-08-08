@@ -3,8 +3,8 @@ package middleware
 import (
 	"strings"
 
-	"github.com/agnos/hms/internal/models"
-	"github.com/agnos/hms/internal/services"
+	"github.com/DingDong039/hms/internal/models"
+	"github.com/DingDong039/hms/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

@@ -164,4 +164,3 @@ go run cmd/main/main.go
 
 ## License
 
-This project is proprietary and is intellectual property of Agnos health co. ltd.

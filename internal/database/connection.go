@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/agnos/hms/internal/config"
+	"github.com/DingDong039/hms/internal/config"
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
