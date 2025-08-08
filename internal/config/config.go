@@ -84,7 +84,7 @@ func Load() (*Config, error) {
 			URL:      dbURL,
 		},
 		JWT: JWTConfig{
-			Secret:     getEnv("JWT_SECRET", "your-secret-key"),
+			Secret:     getEnv("JWT_SECRET", ""),
 			ExpireTime: jwtExpireTime,
 		},
 		HospitalAPI: HospitalAPIConfig{

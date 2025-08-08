@@ -29,6 +29,7 @@ go.work
 # environment variables
 .env
 .env.*
+!.env.example
 
 # system files
 *.bak

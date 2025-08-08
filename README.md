@@ -108,11 +108,24 @@ HMS/
 ### Running with Docker
 
 1. Clone the repository
-2. Configure environment variables in `.env` file
-3. Run the application:
+2. Create and edit environment file:
 
 ```bash
-docker-compose up -d
+cp .env.example .env
+# Edit .env and set DB_* and JWT_SECRET as needed
+# To avoid port 80 conflicts on macOS, set NGINX_PORT=8081
+```
+
+3. Start the stack (build + up):
+
+```bash
+docker-compose up -d --build
+```
+
+4. Tail logs (optional):
+
+```bash
+docker-compose logs -f
 ```
 
 ### Running Locally
@@ -122,7 +135,7 @@ docker-compose up -d
 3. Install dependencies:
 
 ```bash
-go mod download
+go mod tidy
 ```
 
 4. Run the application:
@@ -130,6 +143,20 @@ go mod download
 ```bash
 go run cmd/main/main.go
 ```
+
+### Makefile Shortcuts (optional)
+
+Common tasks are automated via the `Makefile`:
+
+- `make env` – Create `.env` from `.env.example` if missing and set `NGINX_PORT=8081`.
+- `make tidy` – Run `go mod tidy`.
+- `make test` – Run all tests.
+- `make test-handlers` – Run only handler tests with `-v`.
+- `make docker-build` – Build and start containers.
+- `make docker-up` – Start containers.
+- `make docker-down` – Stop and remove containers.
+- `make docker-logs` – Tail logs.
+- `make run` – Run locally: `go run cmd/main/main.go`.
 
 ## Database Schema
 

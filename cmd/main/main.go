@@ -20,8 +20,10 @@ import (
 
 func main() {
 	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("Warning: .env file not found")
+	if _, err := os.Stat(".env"); err == nil {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: failed to load .env: %v", err)
+		}
 	}
 
 	// Initialize configuration
