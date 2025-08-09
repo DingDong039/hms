@@ -210,7 +210,6 @@ The HMS uses a PostgreSQL database with the following key tables:
 - `phone_number`: Phone number
 - `email`: Email address
 - `gender`: Gender (M/F)
-- `hospital_id`: Foreign key to Hospitals
 - `created_at`: Creation timestamp
 - `updated_at`: Update timestamp
 
