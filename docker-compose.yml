@@ -13,10 +13,26 @@ services:
       - .env
     environment:
       - DB_HOST=db
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-hms}
+      - DB_SSLMODE=${DB_SSLMODE:-disable}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRE_TIME=${JWT_EXPIRE_TIME:-4}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - HOSPITAL_A_BASE_URL=${HOSPITAL_A_BASE_URL:-https://hospital-a.api.co.th}
+      - MIGRATIONS_PATH=${MIGRATIONS_PATH:-./migrations}
     ports:
-      - "${SERVER_PORT:-8080}:8080"
+      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
     networks:
       - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${SERVER_PORT:-8080}/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Nginx Service
   nginx:
@@ -28,9 +44,15 @@ services:
     volumes:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - hms-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Database Service
   db:
@@ -38,24 +60,28 @@ services:
     container_name: hms-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=HMS@2025
-      - POSTGRES_DB=hms
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-hms}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     networks:
       - hms-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-hms}"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 30s
 
 networks:
   hms-network:
     driver: bridge
+    name: hms-network
 
 volumes:
   postgres_data:
+    driver: local

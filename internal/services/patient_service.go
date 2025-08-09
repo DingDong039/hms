@@ -10,7 +10,7 @@ import (
 
 // PatientService defines the interface for patient operations
 type PatientService interface {
-	SearchPatient(ctx context.Context, req models.PatientSearchRequest, hospitalID int) (*models.PatientSearchResponse, error)
+	SearchPatient(ctx context.Context, req models.PatientSearchRequest) (*models.PatientSearchResponse, error)
 }
 
 // PatientServiceImpl implements PatientService
@@ -28,7 +28,7 @@ func NewPatientService(patientRepo repositories.PatientRepository, hospitalAPISe
 }
 
 // SearchPatient searches for a patient by ID (national ID or passport ID)
-func (s *PatientServiceImpl) SearchPatient(ctx context.Context, req models.PatientSearchRequest, hospitalID int) (*models.PatientSearchResponse, error) {
+func (s *PatientServiceImpl) SearchPatient(ctx context.Context, req models.PatientSearchRequest) (*models.PatientSearchResponse, error) {
 	// Determine if the ID is a national ID or passport ID
 	// Thai national ID is 13 digits
 	// Passport IDs typically have letters
@@ -40,10 +40,10 @@ func (s *PatientServiceImpl) SearchPatient(ctx context.Context, req models.Patie
 	// Check if the ID is numeric and 13 digits (Thai national ID)
 	if len(id) == 13 && isNumeric(id) {
 		// Search by national ID
-		patient, err = s.patientRepo.FindByNationalID(ctx, id, hospitalID)
+		patient, err = s.patientRepo.FindByNationalID(ctx, id)
 	} else {
 		// Search by passport ID
-		patient, err = s.patientRepo.FindByPassportID(ctx, id, hospitalID)
+		patient, err = s.patientRepo.FindByPassportID(ctx, id)
 	}
 
 	// If patient is found in local database, return the data
@@ -86,7 +86,6 @@ func (s *PatientServiceImpl) SearchPatient(ctx context.Context, req models.Patie
 		PhoneNumber:  response.PhoneNumber,
 		Email:        response.Email,
 		Gender:       response.Gender,
-		HospitalID:   hospitalID,
 	}
 
 	// Save patient to database (ignore errors as this is just caching)

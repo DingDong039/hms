@@ -13,7 +13,7 @@ import (
 // StaffRepository defines the interface for staff database operations
 type StaffRepository interface {
 	Create(ctx context.Context, staff *models.Staff) error
-	FindByUsername(ctx context.Context, username string, hospitalID int) (*models.Staff, error)
+	FindByUsername(ctx context.Context, username string) (*models.Staff, error)
 	FindByID(ctx context.Context, id int) (*models.Staff, error)
 	Update(ctx context.Context, staff *models.Staff) error
 	Delete(ctx context.Context, id int) error
@@ -34,8 +34,8 @@ func NewStaffRepository(db *sql.DB) *StaffRepositoryImpl {
 // Create inserts a new staff record into the database
 func (r *StaffRepositoryImpl) Create(ctx context.Context, staff *models.Staff) error {
 	query := `
-		INSERT INTO staff (username, password, hospital_id)
-		VALUES ($1, $2, $3)
+		INSERT INTO staff (username, password)
+		VALUES ($1, $2)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -44,12 +44,11 @@ func (r *StaffRepositoryImpl) Create(ctx context.Context, staff *models.Staff) e
 		query,
 		staff.Username,
 		staff.Password,
-		staff.HospitalID,
 	).Scan(&staff.ID, &staff.CreatedAt, &staff.UpdatedAt)
 
 	if err != nil {
 		// Check for duplicate key error
-		if err.Error() == "pq: duplicate key value violates unique constraint \"staff_username_hospital_id_key\"" {
+		if err.Error() == "pq: duplicate key value violates unique constraint" {
 			return apperrors.NewDuplicateResourceError("staff member already exists")
 		}
 		return apperrors.NewInternalServerError(err)
@@ -58,20 +57,19 @@ func (r *StaffRepositoryImpl) Create(ctx context.Context, staff *models.Staff) e
 	return nil
 }
 
-// FindByUsername finds a staff member by username and hospital ID
-func (r *StaffRepositoryImpl) FindByUsername(ctx context.Context, username string, hospitalID int) (*models.Staff, error) {
+// FindByUsername finds a staff member by username
+func (r *StaffRepositoryImpl) FindByUsername(ctx context.Context, username string) (*models.Staff, error) {
 	query := `
-		SELECT id, username, password, hospital_id, created_at, updated_at
+		SELECT id, username, password, created_at, updated_at
 		FROM staff
-		WHERE username = $1 AND hospital_id = $2
+		WHERE username = $1
 	`
 
 	staff := &models.Staff{}
-	err := r.DB.QueryRowContext(ctx, query, username, hospitalID).Scan(
+	err := r.DB.QueryRowContext(ctx, query, username).Scan(
 		&staff.ID,
 		&staff.Username,
 		&staff.Password,
-		&staff.HospitalID,
 		&staff.CreatedAt,
 		&staff.UpdatedAt,
 	)
@@ -89,7 +87,7 @@ func (r *StaffRepositoryImpl) FindByUsername(ctx context.Context, username strin
 // FindByID finds a staff member by ID
 func (r *StaffRepositoryImpl) FindByID(ctx context.Context, id int) (*models.Staff, error) {
 	query := `
-		SELECT id, username, password, hospital_id, created_at, updated_at
+		SELECT id, username, password, created_at, updated_at
 		FROM staff
 		WHERE id = $1
 	`
@@ -99,7 +97,6 @@ func (r *StaffRepositoryImpl) FindByID(ctx context.Context, id int) (*models.Sta
 		&staff.ID,
 		&staff.Username,
 		&staff.Password,
-		&staff.HospitalID,
 		&staff.CreatedAt,
 		&staff.UpdatedAt,
 	)
@@ -118,7 +115,7 @@ func (r *StaffRepositoryImpl) FindByID(ctx context.Context, id int) (*models.Sta
 func (r *StaffRepositoryImpl) Update(ctx context.Context, staff *models.Staff) error {
 	query := `
 		UPDATE staff
-		SET username = $1, password = $2, hospital_id = $3, updated_at = $4
+		SET username = $1, password = $2, updated_at = $4
 		WHERE id = $5
 		RETURNING updated_at
 	`
@@ -129,7 +126,6 @@ func (r *StaffRepositoryImpl) Update(ctx context.Context, staff *models.Staff) e
 		query,
 		staff.Username,
 		staff.Password,
-		staff.HospitalID,
 		now,
 		staff.ID,
 	).Scan(&staff.UpdatedAt)

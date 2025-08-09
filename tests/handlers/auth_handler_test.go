@@ -59,17 +59,15 @@ func TestCreateStaff_Success(t *testing.T) {
 
 	// Mock request data
 	reqBody := models.StaffCreateRequest{
-		Username:   "testuser",
-		Password:   "password123",
-		HospitalID: 1,
+		Username: "testuser",
+		Password: "password123",
 	}
 	jsonValue, _ := json.Marshal(reqBody)
 
 	// Mock service response
 	mockStaff := &models.Staff{
-		ID:         1,
-		Username:   "testuser",
-		HospitalID: 1,
+		ID:       1,
+		Username: "testuser",
 	}
 	mockAuthService.On("CreateStaff", mock.Anything, reqBody).Return(mockStaff, nil)
 
@@ -105,7 +103,6 @@ func TestCreateStaff_ValidationError(t *testing.T) {
 	// Invalid request (missing required fields)
 	reqBody := models.StaffCreateRequest{
 		Username: "testuser",
-		// Missing password and hospital_id
 	}
 	jsonValue, _ := json.Marshal(reqBody)
 
@@ -137,9 +134,8 @@ func TestLogin_Success(t *testing.T) {
 
 	// Mock request data
 	reqBody := models.StaffLoginRequest{
-		Username:   "testuser",
-		Password:   "password123",
-		HospitalID: 1,
+		Username: "testuser",
+		Password: "password123",
 	}
 	jsonValue, _ := json.Marshal(reqBody)
 
@@ -181,9 +177,8 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 
 	// Mock request data
 	reqBody := models.StaffLoginRequest{
-		Username:   "testuser",
-		Password:   "wrongpassword",
-		HospitalID: 1,
+		Username: "testuser",
+		Password: "wrongpassword",
 	}
 	jsonValue, _ := json.Marshal(reqBody)
 

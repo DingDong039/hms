@@ -1,22 +1,29 @@
 # Hospital Middleware System (HMS)
 
-A middleware system for hospital information management that provides APIs to search and display patient information from Hospital Information Systems (HIS).
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Go Version](https://img.shields.io/badge/go-1.21%2B-00ADD8.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+A middleware system for hospital information management that provides secure APIs to search and display patient information from Hospital Information Systems (HIS). HMS serves as a bridge between hospital systems and client applications, providing standardized access to patient data with proper authentication and authorization controls.
 
 ## Features
 
-- Patient search API with hospital data restriction
-- Staff authentication with JWT
-- Integration with external Hospital APIs
-- Database caching of patient information
-- Docker containerization for easy deployment
+- **Patient Search**: Secure API with hospital data restriction
+- **Authentication**: Staff authentication with JWT tokens
+- **Hospital Integration**: Seamless integration with external Hospital APIs
+- **Data Caching**: Efficient database caching of patient information
+- **Containerization**: Docker setup for easy deployment and scaling
+- **Security**: Role-based access control for patient data
 
 ## Tech Stack
 
-- **Backend**: Go with Gin Framework
-- **Database**: PostgreSQL
+- **Backend**: Go 1.21+ with Gin Framework
+- **Database**: PostgreSQL 14+
 - **Web Server**: Nginx
-- **Containerization**: Docker
-- **Authentication**: JWT
+- **Containerization**: Docker & Docker Compose
+- **Authentication**: JWT (JSON Web Tokens)
+- **Documentation**: OpenAPI/Swagger
+- **Testing**: Go testing package with testify
 
 ## Project Structure
 
@@ -88,14 +95,17 @@ HMS/
 
 ## API Endpoints
 
-### Authentication
+### Health Check
+- `GET /api/v1/health`: Check if the API is running
 
+### Authentication
 - `POST /api/v1/auth/staff/create`: Create a new staff member
 - `POST /api/v1/auth/staff/login`: Login and get JWT token
 
 ### Patient
-
 - `POST /api/v1/patients/search`: Search for a patient by ID (requires authentication)
+
+For detailed API documentation, see [API Specification](./docs/api_spec.md)
 
 ## Getting Started
 
@@ -103,7 +113,24 @@ HMS/
 
 - Docker and Docker Compose
 - Go 1.21+ (for local development)
-- PostgreSQL (for local development)
+- PostgreSQL 14+ (for local development)
+- Git
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/hms.git
+cd hms
+
+# Set up environment variables
+cp .env.example .env
+
+# Start with Docker
+docker-compose up -d
+
+# The API will be available at http://localhost:8080/api/v1
+```
 
 ### Running with Docker
 
@@ -160,34 +187,41 @@ Common tasks are automated via the `Makefile`:
 
 ## Database Schema
 
-### Staff Table
+The HMS uses a PostgreSQL database with the following key tables:
 
+- **Staff**: Stores staff member credentials and authentication information
+- **Patients**: Stores patient demographic and identification information
+
+### Staff Table
 - `id`: Primary key
 - `username`: Staff username
-- `password`: Hashed password
-- `hospital_id`: Hospital ID
+- `password`: Bcrypt hashed password
 - `created_at`: Creation timestamp
 - `updated_at`: Update timestamp
 
 ### Patients Table
-
 - `id`: Primary key
 - `national_id`: Thai national ID
 - `passport_id`: Passport ID for foreigners
-- `first_name_th`: First name in Thai
-- `middle_name_th`: Middle name in Thai
-- `last_name_th`: Last name in Thai
-- `first_name_en`: First name in English
-- `middle_name_en`: Middle name in English
-- `last_name_en`: Last name in English
+- `first_name_th`, `last_name_th`: Thai name
+- `first_name_en`, `last_name_en`: English name
 - `date_of_birth`: Date of birth
 - `patient_hn`: Hospital number
 - `phone_number`: Phone number
 - `email`: Email address
 - `gender`: Gender (M/F)
-- `hospital_id`: Hospital ID
+- `hospital_id`: Foreign key to Hospitals
 - `created_at`: Creation timestamp
 - `updated_at`: Update timestamp
 
+For a detailed ER diagram and database specifications, see [ER Diagram](./docs/er_diagram.md)
+
+## Documentation
+
+- [API Specification](./docs/api_spec.md) - Detailed API endpoints and usage
+- [ER Diagram](./docs/er_diagram.md) - Database schema and relationships
+- [Project Structure](./docs/project_structure.md) - Code organization
+
 ## License
 
+MIT License

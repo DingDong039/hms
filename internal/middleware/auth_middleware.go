@@ -37,8 +37,6 @@ func AuthMiddleware(authService services.AuthService) gin.HandlerFunc {
 
 		// Set user information in the context
 		c.Set("userID", claims.UserID)
-		c.Set("hospitalID", claims.HospitalID)
-
 		c.Next()
 	}
 }

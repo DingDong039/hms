@@ -44,15 +44,8 @@ func (h *PatientHandler) SearchPatient(c *gin.Context) {
 		return
 	}
 
-	// Get hospital ID from context (set by auth middleware)
-	hospitalID, exists := c.Get("hospitalID")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(http.StatusInternalServerError, "hospital ID not found in context"))
-		return
-	}
-
 	// Search for patient
-	patient, err := h.patientService.SearchPatient(c.Request.Context(), req, hospitalID.(int))
+	patient, err := h.patientService.SearchPatient(c.Request.Context(), req)
 	if err != nil {
 		// Handle specific error types
 		c.JSON(http.StatusNotFound, models.NewErrorResponse(http.StatusNotFound, "patient not found"))

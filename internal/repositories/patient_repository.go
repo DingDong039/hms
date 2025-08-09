@@ -14,9 +14,8 @@ import (
 type PatientRepository interface {
 	Create(ctx context.Context, patient *models.Patient) error
 	FindByID(ctx context.Context, id int) (*models.Patient, error)
-	FindByNationalID(ctx context.Context, nationalID string, hospitalID int) (*models.Patient, error)
-	FindByPassportID(ctx context.Context, passportID string, hospitalID int) (*models.Patient, error)
-	FindByHospital(ctx context.Context, hospitalID int) ([]models.Patient, error)
+	FindByNationalID(ctx context.Context, nationalID string) (*models.Patient, error)
+	FindByPassportID(ctx context.Context, passportID string) (*models.Patient, error)
 	Update(ctx context.Context, patient *models.Patient) error
 	Delete(ctx context.Context, id int) error
 }
@@ -39,9 +38,9 @@ func (r *PatientRepositoryImpl) Create(ctx context.Context, patient *models.Pati
 		INSERT INTO patients (
 			national_id, passport_id, first_name_th, middle_name_th, last_name_th,
 			first_name_en, middle_name_en, last_name_en, date_of_birth, patient_hn,
-			phone_number, email, gender, hospital_id
+			phone_number, email, gender
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -61,7 +60,6 @@ func (r *PatientRepositoryImpl) Create(ctx context.Context, patient *models.Pati
 		patient.PhoneNumber,
 		patient.Email,
 		patient.Gender,
-		patient.HospitalID,
 	).Scan(&patient.ID, &patient.CreatedAt, &patient.UpdatedAt)
 
 	if err != nil {
@@ -76,7 +74,7 @@ func (r *PatientRepositoryImpl) FindByID(ctx context.Context, id int) (*models.P
 	query := `
 		SELECT id, national_id, passport_id, first_name_th, middle_name_th, last_name_th,
 			first_name_en, middle_name_en, last_name_en, date_of_birth, patient_hn,
-			phone_number, email, gender, hospital_id, created_at, updated_at
+			phone_number, email, gender, created_at, updated_at
 		FROM patients
 		WHERE id = $1
 	`
@@ -97,7 +95,6 @@ func (r *PatientRepositoryImpl) FindByID(ctx context.Context, id int) (*models.P
 		&patient.PhoneNumber,
 		&patient.Email,
 		&patient.Gender,
-		&patient.HospitalID,
 		&patient.CreatedAt,
 		&patient.UpdatedAt,
 	)
@@ -113,17 +110,17 @@ func (r *PatientRepositoryImpl) FindByID(ctx context.Context, id int) (*models.P
 }
 
 // FindByNationalID finds a patient by national ID and hospital ID
-func (r *PatientRepositoryImpl) FindByNationalID(ctx context.Context, nationalID string, hospitalID int) (*models.Patient, error) {
+func (r *PatientRepositoryImpl) FindByNationalID(ctx context.Context, nationalID string) (*models.Patient, error) {
 	query := `
 		SELECT id, national_id, passport_id, first_name_th, middle_name_th, last_name_th,
 			first_name_en, middle_name_en, last_name_en, date_of_birth, patient_hn,
-			phone_number, email, gender, hospital_id, created_at, updated_at
+			phone_number, email, gender, created_at, updated_at
 		FROM patients
-		WHERE national_id = $1 AND hospital_id = $2
+		WHERE national_id = $1
 	`
 
 	patient := &models.Patient{}
-	err := r.DB.QueryRowContext(ctx, query, nationalID, hospitalID).Scan(
+	err := r.DB.QueryRowContext(ctx, query, nationalID).Scan(
 		&patient.ID,
 		&patient.NationalID,
 		&patient.PassportID,
@@ -138,7 +135,6 @@ func (r *PatientRepositoryImpl) FindByNationalID(ctx context.Context, nationalID
 		&patient.PhoneNumber,
 		&patient.Email,
 		&patient.Gender,
-		&patient.HospitalID,
 		&patient.CreatedAt,
 		&patient.UpdatedAt,
 	)
@@ -154,17 +150,17 @@ func (r *PatientRepositoryImpl) FindByNationalID(ctx context.Context, nationalID
 }
 
 // FindByPassportID finds a patient by passport ID and hospital ID
-func (r *PatientRepositoryImpl) FindByPassportID(ctx context.Context, passportID string, hospitalID int) (*models.Patient, error) {
+func (r *PatientRepositoryImpl) FindByPassportID(ctx context.Context, passportID string) (*models.Patient, error) {
 	query := `
 		SELECT id, national_id, passport_id, first_name_th, middle_name_th, last_name_th,
 			first_name_en, middle_name_en, last_name_en, date_of_birth, patient_hn,
-			phone_number, email, gender, hospital_id, created_at, updated_at
+			phone_number, email, gender, created_at, updated_at
 		FROM patients
-		WHERE passport_id = $1 AND hospital_id = $2
+		WHERE passport_id = $1
 	`
 
 	patient := &models.Patient{}
-	err := r.DB.QueryRowContext(ctx, query, passportID, hospitalID).Scan(
+	err := r.DB.QueryRowContext(ctx, query, passportID).Scan(
 		&patient.ID,
 		&patient.NationalID,
 		&patient.PassportID,
@@ -179,7 +175,6 @@ func (r *PatientRepositoryImpl) FindByPassportID(ctx context.Context, passportID
 		&patient.PhoneNumber,
 		&patient.Email,
 		&patient.Gender,
-		&patient.HospitalID,
 		&patient.CreatedAt,
 		&patient.UpdatedAt,
 	)
@@ -194,57 +189,6 @@ func (r *PatientRepositoryImpl) FindByPassportID(ctx context.Context, passportID
 	return patient, nil
 }
 
-// FindByHospital finds all patients in a hospital
-func (r *PatientRepositoryImpl) FindByHospital(ctx context.Context, hospitalID int) ([]models.Patient, error) {
-	query := `
-		SELECT id, national_id, passport_id, first_name_th, middle_name_th, last_name_th,
-			first_name_en, middle_name_en, last_name_en, date_of_birth, patient_hn,
-			phone_number, email, gender, hospital_id, created_at, updated_at
-		FROM patients
-		WHERE hospital_id = $1
-	`
-
-	rows, err := r.DB.QueryContext(ctx, query, hospitalID)
-	if err != nil {
-		return nil, apperrors.NewInternalServerError(err)
-	}
-	defer rows.Close()
-
-	var patients []models.Patient
-	for rows.Next() {
-		var patient models.Patient
-		err := rows.Scan(
-			&patient.ID,
-			&patient.NationalID,
-			&patient.PassportID,
-			&patient.FirstNameTH,
-			&patient.MiddleNameTH,
-			&patient.LastNameTH,
-			&patient.FirstNameEN,
-			&patient.MiddleNameEN,
-			&patient.LastNameEN,
-			&patient.DateOfBirth,
-			&patient.PatientHN,
-			&patient.PhoneNumber,
-			&patient.Email,
-			&patient.Gender,
-			&patient.HospitalID,
-			&patient.CreatedAt,
-			&patient.UpdatedAt,
-		)
-		if err != nil {
-			return nil, apperrors.NewInternalServerError(err)
-		}
-		patients = append(patients, patient)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, apperrors.NewInternalServerError(err)
-	}
-
-	return patients, nil
-}
-
 // Update updates a patient record
 func (r *PatientRepositoryImpl) Update(ctx context.Context, patient *models.Patient) error {
 	query := `
@@ -252,8 +196,8 @@ func (r *PatientRepositoryImpl) Update(ctx context.Context, patient *models.Pati
 		SET national_id = $1, passport_id = $2, first_name_th = $3, middle_name_th = $4, 
 			last_name_th = $5, first_name_en = $6, middle_name_en = $7, last_name_en = $8, 
 			date_of_birth = $9, patient_hn = $10, phone_number = $11, email = $12, 
-			gender = $13, hospital_id = $14, updated_at = $15
-		WHERE id = $16
+			gender = $13, updated_at = $14
+		WHERE id = $15
 		RETURNING updated_at
 	`
 
@@ -274,7 +218,6 @@ func (r *PatientRepositoryImpl) Update(ctx context.Context, patient *models.Pati
 		patient.PhoneNumber,
 		patient.Email,
 		patient.Gender,
-		patient.HospitalID,
 		now,
 		patient.ID,
 	).Scan(&patient.UpdatedAt)

@@ -10,21 +10,19 @@ import (
 
 // JWTClaims represents the claims in a JWT token
 type JWTClaims struct {
-	UserID     int `json:"user_id"`
-	HospitalID int `json:"hospital_id"`
+	UserID int `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken generates a new JWT token for a user
-func GenerateToken(userID, hospitalID int, cfg config.JWTConfig) (string, int64, error) {
+func GenerateToken(userID int, cfg config.JWTConfig) (string, int64, error) {
 	// Set expiration time
 	expirationTime := time.Now().Add(time.Duration(cfg.ExpireTime) * time.Hour)
 	expiresAt := expirationTime.Unix()
 
 	// Create claims
 	claims := &JWTClaims{
-		UserID:     userID,
-		HospitalID: hospitalID,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

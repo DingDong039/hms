@@ -23,8 +23,8 @@ type MockPatientService struct {
 	mock.Mock
 }
 
-func (m *MockPatientService) SearchPatient(ctx context.Context, req models.PatientSearchRequest, hospitalID int) (*models.PatientSearchResponse, error) {
-	args := m.Called(ctx, req, hospitalID)
+func (m *MockPatientService) SearchPatient(ctx context.Context, req models.PatientSearchRequest) (*models.PatientSearchResponse, error) {
+	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -71,16 +71,10 @@ func TestSearchPatient_Success(t *testing.T) {
 	router := gin.Default()
 	v1 := router.Group("/api/v1")
 
-	// Add a test middleware to set hospitalID in context
-	v1.Use(func(c *gin.Context) {
-		c.Set("hospitalID", 1)
-		c.Next()
-	})
-
 	patientHandler.RegisterRoutes(v1)
 
 	// Stub token validation for auth middleware
-	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1}, nil)
 
 	// Mock request data
 	reqBody := models.PatientSearchRequest{
@@ -101,7 +95,7 @@ func TestSearchPatient_Success(t *testing.T) {
 		Email:       "somchai@example.com",
 		Gender:      "M",
 	}
-	mockPatientService.On("SearchPatient", mock.Anything, reqBody, 1).Return(mockResponse, nil)
+	mockPatientService.On("SearchPatient", mock.Anything, reqBody).Return(mockResponse, nil)
 
 	// Create request
 	req, _ := http.NewRequest("POST", "/api/v1/patients/search", bytes.NewBuffer(jsonValue))
@@ -134,16 +128,10 @@ func TestSearchPatient_NotFound(t *testing.T) {
 	router := gin.Default()
 	v1 := router.Group("/api/v1")
 
-	// Add a test middleware to set hospitalID in context
-	v1.Use(func(c *gin.Context) {
-		c.Set("hospitalID", 1)
-		c.Next()
-	})
-
 	patientHandler.RegisterRoutes(v1)
 
 	// Stub token validation for auth middleware
-	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1}, nil)
 
 	// Mock request data
 	reqBody := models.PatientSearchRequest{
@@ -152,7 +140,7 @@ func TestSearchPatient_NotFound(t *testing.T) {
 	jsonValue, _ := json.Marshal(reqBody)
 
 	// Mock service error
-	mockPatientService.On("SearchPatient", mock.Anything, reqBody, 1).Return(nil, errors.New("patient not found"))
+	mockPatientService.On("SearchPatient", mock.Anything, reqBody).Return(nil, errors.New("patient not found"))
 
 	// Create request
 	req, _ := http.NewRequest("POST", "/api/v1/patients/search", bytes.NewBuffer(jsonValue))
@@ -185,16 +173,10 @@ func TestSearchPatient_ValidationError(t *testing.T) {
 	router := gin.Default()
 	v1 := router.Group("/api/v1")
 
-	// Add a test middleware to set hospitalID in context
-	v1.Use(func(c *gin.Context) {
-		c.Set("hospitalID", 1)
-		c.Next()
-	})
-
 	patientHandler.RegisterRoutes(v1)
 
 	// Stub token validation for auth middleware
-	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1, HospitalID: 1}, nil)
+	mockAuthService.On("ValidateToken", "valid-token").Return(&utils.JWTClaims{UserID: 1}, nil)
 
 	// Invalid request (empty ID)
 	reqBody := models.PatientSearchRequest{

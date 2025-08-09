@@ -41,9 +41,8 @@ func (s *AuthServiceImpl) CreateStaff(ctx context.Context, req models.StaffCreat
 
 	// Create staff model
 	staff := &models.Staff{
-		Username:   req.Username,
-		Password:   hashedPassword,
-		HospitalID: req.HospitalID,
+		Username: req.Username,
+		Password: hashedPassword,
 	}
 
 	// Save to database
@@ -59,7 +58,7 @@ func (s *AuthServiceImpl) CreateStaff(ctx context.Context, req models.StaffCreat
 // Login authenticates a staff member and returns a JWT token
 func (s *AuthServiceImpl) Login(ctx context.Context, req models.StaffLoginRequest) (*models.StaffLoginResponse, error) {
 	// Find staff by username and hospital ID
-	staff, err := s.staffRepo.FindByUsername(ctx, req.Username, req.HospitalID)
+	staff, err := s.staffRepo.FindByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, apperrors.NewUnauthorizedError("invalid credentials")
 	}
@@ -70,7 +69,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, req models.StaffLoginReques
 	}
 
 	// Generate JWT token
-	token, expiresAt, err := utils.GenerateToken(staff.ID, staff.HospitalID, s.config.JWT)
+	token, expiresAt, err := utils.GenerateToken(staff.ID, s.config.JWT)
 	if err != nil {
 		return nil, apperrors.NewInternalServerError(err)
 	}

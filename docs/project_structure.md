@@ -2,6 +2,11 @@
 
 This document outlines the structure and organization of the Hospital Middleware System project.
 
+**Related Documentation:**
+- [README](../README.md) - Main project documentation
+- [API Specification](./api_spec.md) - API endpoints and usage
+- [ER Diagram](./er_diagram.md) - Database schema and relationships
+
 ## Overview
 
 The Hospital Middleware System (HMS) follows a clean architecture pattern with clear separation of concerns. The project is organized into several layers:
@@ -83,7 +88,46 @@ HMS/
 
 ## Architecture
 
-The HMS project follows a layered architecture pattern:
+The HMS project follows a clean layered architecture pattern with clear separation of concerns:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  HTTP Requests                      │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│             Middleware (auth, CORS, logging)        │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│         Handlers (Presentation Layer)               │
+│                                                     │
+│  - Parse and validate HTTP requests                 │
+│  - Call appropriate services                        │
+│  - Format and return HTTP responses                 │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│         Services (Business Logic Layer)             │
+│                                                     │
+│  - Authentication and authorization                 │
+│  - Patient search logic                             │
+│  - Integration with external Hospital APIs          │
+│  - Data validation and transformation               │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│         Repositories (Data Access Layer)            │
+│                                                     │
+│  - CRUD operations for each entity                  │
+│  - Query construction and execution                 │
+│  - Data mapping between database and domain models  │
+└───────────────────────┬─────────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│                    Database                         │
+└─────────────────────────────────────────────────────┘
+```
 
 ### 1. Presentation Layer (Handlers)
 
@@ -93,6 +137,8 @@ The handlers are responsible for:
 - Formatting and returning HTTP responses
 - Route registration and configuration
 
+**Key Files:** `auth_handler.go`, `patient_handler.go`, `routes.go`
+
 ### 2. Business Logic Layer (Services)
 
 The services implement the core business logic:
@@ -100,6 +146,8 @@ The services implement the core business logic:
 - Patient search logic
 - Integration with external Hospital APIs
 - Data validation and transformation
+
+**Key Files:** `auth_service.go`, `patient_service.go`, `hospital_api_service.go`
 
 ### 3. Data Access Layer (Repositories)
 
@@ -109,12 +157,16 @@ The repositories handle database operations:
 - Data mapping between database and domain models
 - Transaction management
 
+**Key Files:** `base_repository.go`, `staff_repository.go`, `patient_repository.go`
+
 ### 4. Domain Layer (Models)
 
 The models represent the business entities:
 - Staff and Patient entities
 - Data Transfer Objects (DTOs) for requests and responses
 - API response formatting
+
+**Key Files:** `staff.go`, `patient.go`, `response.go`
 
 ### 5. Infrastructure
 
@@ -123,6 +175,8 @@ Infrastructure components include:
 - Database connection and migrations
 - Middleware for authentication, CORS, and logging
 - Utility functions for JWT, password hashing, etc.
+
+**Key Files:** `config.go`, `connection.go`, `migrations.go`, `jwt.go`, `password.go`
 
 ## Dependency Flow
 
