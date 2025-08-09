@@ -112,15 +112,16 @@ For detailed API documentation, see [API Specification](./docs/api_spec.md)
 ### Prerequisites
 
 - Docker and Docker Compose
-- Go 1.21+ (for local development)
-- PostgreSQL 14+ (for local development)
+- Go 1.24+ (for local development)
+- PostgreSQL 17+ (for local development)
 - Git
 
 ### Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/hms.git
+git clone https://github.com/DingDong039/hms.git
+
 cd hms
 
 # Set up environment variables
@@ -203,12 +204,8 @@ The HMS uses a PostgreSQL database with the following key tables:
 - `id`: Primary key
 - `national_id`: Thai national ID
 - `passport_id`: Passport ID for foreigners
-- `first_name_th`, `last_name_th`: Thai name
-- `middle_name_th`:
-- `last_name_th`:
-- `first_name_en`:
-- `middle_name_en`:
-- `last_name_en`: English name
+- `first_name_th`, `middle_name_th`, `last_name_th`: Thai name
+- `first_name_en`, `middle_name_en`, `last_name_en`: English name
 - `date_of_birth`: Date of birth
 - `patient_hn`: Hospital number
 - `phone_number`: Phone number
