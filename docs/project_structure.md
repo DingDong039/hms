@@ -74,7 +74,7 @@ HMS/
 │   └── nginx.conf                # Nginx configuration
 ├── docs/                         # Documentation
 │   ├── api_spec.md               # API specification
-│   ├── er_diagram.png            # ER diagram
+│   ├── er_diagram.md             # ER diagram
 │   └── project_structure.md      # This file
 ├── .env                          # Environment variables
 ├── .env.example                  # Environment template

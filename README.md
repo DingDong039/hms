@@ -82,10 +82,10 @@ HMS/
 │   └── nginx.conf               # Nginx config
 ├── docs/
 │   ├── api_spec.md             # API Documentation
-│   ├── er_diagram.png          # ER Diagram
+│   ├── er_diagram.md           # ER Diagram
 │   └── project_structure.md    # Project Structure Doc
 ├── .env                        # Environment variables
-├── .env.example               # Environment template
+├── .env.example                # Environment template
 ├── .gitignore
 ├── docker-compose.yml         # Docker services setup
 ├── go.mod                     # Go modules

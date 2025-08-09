@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the database schema for the Hospital Middleware System (HMS). The system uses PostgreSQL and consists of three main tables: Hospitals, Staff, and Patients, with relationships between them.
+This document describes the database schema for the Hospital Middleware System (HMS). The system uses PostgreSQL and currently consists of two main tables: Staff and Patients. There is no Hospitals table.
 
 **Related Documentation:**
 - [README](../README.md) - Main project documentation
@@ -11,47 +11,51 @@ This document describes the database schema for the Hospital Middleware System (
 
 ## Database Schema Visualization
 
-```
-+------------------+       +------------------+
-|      Staff       |       |     Patients     |
-+------------------+       +------------------+
-| id (PK)          |       | id (PK)          |
-| username         |       | national_id      |
-| password         |       | passport_id      |
-| created_at       |       | first_name_th    |
-| updated_at       |       | middle_name_th   |
-+------------------+       | last_name_th     |
-                           | first_name_en    |
-                           | middle_name_en   |
-                           | last_name_en     |
-                           | date_of_birth    |
-                           | patient_hn       |
-                           | phone_number     |
-                           | email            |
-                           | gender           |
-                           | created_at       |
-                           | updated_at       |
-                           +------------------+
+```mermaid
+erDiagram
+    STAFF {
+        SERIAL id "PK"
+        VARCHAR(50) username "NOT NULL, UNIQUE"
+        VARCHAR(255) password "NOT NULL"
+        TIMESTAMPTZ created_at "DEFAULT CURRENT_TIMESTAMP"
+        TIMESTAMPTZ updated_at "DEFAULT CURRENT_TIMESTAMP"
+    }
+
+    PATIENTS {
+        SERIAL id "PK"
+        VARCHAR(20) national_id
+        VARCHAR(20) passport_id
+        VARCHAR(100) first_name_th
+        VARCHAR(100) middle_name_th
+        VARCHAR(100) last_name_th
+        VARCHAR(100) first_name_en
+        VARCHAR(100) middle_name_en
+        VARCHAR(100) last_name_en
+        DATE date_of_birth
+        VARCHAR(50) patient_hn "NOT NULL"
+        VARCHAR(20) phone_number
+        VARCHAR(100) email
+        VARCHAR(1) gender
+        TIMESTAMPTZ created_at "DEFAULT CURRENT_TIMESTAMP"
+        TIMESTAMPTZ updated_at "DEFAULT CURRENT_TIMESTAMP"
+    }
 ```
 
 ## Entity Relationships
 
-The system no longer uses the Hospitals table. Staff and Patients are now independent entities without a direct relationship to a Hospitals table.
+Staff and Patients are independent entities with no relationships at this time. There is no Hospitals table.
 
 ## Indexes
-
-### Hospitals Table
-- Primary Key: `id`
-- Unique Index: `code`
 
 ### Staff Table
 - Primary Key: `id`
 - Unique Index: `(username)`
+- Index: `username` (for faster lookups)
 
 ### Patients Table
 - Primary Key: `id`
-- Unique Index: `(national_id)` when `national_id` is not null
-- Unique Index: `(passport_id)` when `passport_id` is not null
+- Index: `national_id`
+- Index: `passport_id`
 - Index: `patient_hn`
 
 ## Table Specifications
@@ -60,32 +64,32 @@ The system no longer uses the Hospitals table. Staff and Patients are now indepe
 
 | Column | Type | Description | Constraints |
 |--------|------|-------------|-------------|
-| `id` | SERIAL | Primary key | NOT NULL, AUTO INCREMENT |
-| `username` | VARCHAR(100) | Staff username | NOT NULL, UNIQUE |
+| `id` | SERIAL | Primary key | AUTO INCREMENT |
+| `username` | VARCHAR(50) | Staff username | NOT NULL, UNIQUE |
 | `password` | VARCHAR(255) | Bcrypt hashed password | NOT NULL |
-| `created_at` | TIMESTAMP WITH TIME ZONE | Creation timestamp | NOT NULL, DEFAULT NOW() |
-| `updated_at` | TIMESTAMP WITH TIME ZONE | Update timestamp | NOT NULL, DEFAULT NOW() |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Creation timestamp | DEFAULT NOW() |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | Update timestamp | DEFAULT NOW() |
 
 ### Patients Table
 
 | Column | Type | Description | Constraints |
 |--------|------|-------------|-------------|
-| `id` | SERIAL | Primary key | NOT NULL, AUTO INCREMENT |
-| `national_id` | VARCHAR(13) | Thai national ID | NULL |
-| `passport_id` | VARCHAR(50) | Passport ID for foreigners | NULL |
-| `first_name_th` | VARCHAR(100) | First name in Thai | NOT NULL |
+| `id` | SERIAL | Primary key | AUTO INCREMENT |
+| `national_id` | VARCHAR(20) | Thai national ID | NULL |
+| `passport_id` | VARCHAR(20) | Passport ID for foreigners | NULL |
+| `first_name_th` | VARCHAR(100) | First name in Thai | NULL |
 | `middle_name_th` | VARCHAR(100) | Middle name in Thai | NULL |
-| `last_name_th` | VARCHAR(100) | Last name in Thai | NOT NULL |
-| `first_name_en` | VARCHAR(100) | First name in English | NOT NULL |
+| `last_name_th` | VARCHAR(100) | Last name in Thai | NULL |
+| `first_name_en` | VARCHAR(100) | First name in English | NULL |
 | `middle_name_en` | VARCHAR(100) | Middle name in English | NULL |
-| `last_name_en` | VARCHAR(100) | Last name in English | NOT NULL |
-| `date_of_birth` | TIMESTAMP WITH TIME ZONE | Date of birth | NOT NULL |
+| `last_name_en` | VARCHAR(100) | Last name in English | NULL |
+| `date_of_birth` | DATE | Date of birth | NULL |
 | `patient_hn` | VARCHAR(50) | Hospital number | NOT NULL |
 | `phone_number` | VARCHAR(20) | Phone number | NULL |
 | `email` | VARCHAR(100) | Email address | NULL |
-| `gender` | CHAR(1) | Gender (M/F) | NOT NULL |
-| `created_at` | TIMESTAMP WITH TIME ZONE | Creation timestamp | NOT NULL, DEFAULT NOW() |
-| `updated_at` | TIMESTAMP WITH TIME ZONE | Update timestamp | NOT NULL, DEFAULT NOW() |
+| `gender` | VARCHAR(1) | Gender (M/F) | NULL |
+| `created_at` | TIMESTAMP WITH TIME ZONE | Creation timestamp | DEFAULT NOW() |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | Update timestamp | DEFAULT NOW() |
 
 ## Business Rules and Constraints
 
@@ -98,16 +102,17 @@ The system no longer uses the Hospitals table. Staff and Patients are now indepe
 - `id` is the primary key and auto-increments
 - At least one of `national_id` or `passport_id` must be provided (CHECK constraint)
 - `gender` must be either 'M' or 'F' (CHECK constraint)
-- `national_id` must be unique when not null
-- `passport_id` must be unique when not null
+- `national_id`, `passport_id`, and `patient_hn` are indexed for faster lookups
 
 ## Migration Scripts
 
 Migration scripts for creating these tables can be found in the `/migrations` directory:
 
-- `001_create_staff_table.sql`
-- `002_create_patients_table.sql`
+- `001_create_staff_table.up.sql`
+- `002_create_patients_table.up.sql`
 
 ## Database Diagram
 
-For a visual representation of this schema, see the ER diagram image at `docs/er_diagram.png`
+The Mermaid ER diagram above reflects the current schema defined by the SQL migrations.
+
+![ER Diagram SVG](docs/er_diagram.svg)
