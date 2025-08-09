@@ -75,7 +75,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		case *services.ValidationError:
 			c.JSON(http.StatusBadRequest, models.NewErrorResponse(http.StatusBadRequest, err.Error()))
 		default:
-			c.JSON(http.StatusUnauthorized, models.NewErrorResponse(http.StatusUnauthorized, "invalid credentials"))
+			c.JSON(http.StatusUnauthorized, models.NewErrorResponse(http.StatusUnauthorized, "invalid username or password"))
 		}
 		return
 	}

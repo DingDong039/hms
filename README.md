@@ -1,7 +1,7 @@
 # Hospital Middleware System (HMS)
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Go Version](https://img.shields.io/badge/go-1.21%2B-00ADD8.svg)
+![Go Version](https://img.shields.io/badge/go-1.24%2B-00ADD8.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 A middleware system for hospital information management that provides secure APIs to search and display patient information from Hospital Information Systems (HIS). HMS serves as a bridge between hospital systems and client applications, providing standardized access to patient data with proper authentication and authorization controls.
@@ -17,8 +17,8 @@ A middleware system for hospital information management that provides secure API
 
 ## Tech Stack
 
-- **Backend**: Go 1.21+ with Gin Framework
-- **Database**: PostgreSQL 14+
+- **Backend**: Go 1.24+ with Gin Framework
+- **Database**: PostgreSQL 17+
 - **Web Server**: Nginx
 - **Containerization**: Docker & Docker Compose
 - **Authentication**: JWT (JSON Web Tokens)
@@ -204,7 +204,11 @@ The HMS uses a PostgreSQL database with the following key tables:
 - `national_id`: Thai national ID
 - `passport_id`: Passport ID for foreigners
 - `first_name_th`, `last_name_th`: Thai name
-- `first_name_en`, `last_name_en`: English name
+- `middle_name_th`:
+- `last_name_th`:
+- `first_name_en`:
+- `middle_name_en`:
+- `last_name_en`: English name
 - `date_of_birth`: Date of birth
 - `patient_hn`: Hospital number
 - `phone_number`: Phone number

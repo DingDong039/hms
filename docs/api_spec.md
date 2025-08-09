@@ -184,11 +184,7 @@ curl -X POST http://localhost:8080/api/v1/auth/staff/login \
   "success": true,
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expires_at": "2025-08-10T13:34:04Z",
-    "staff": {
-      "id": 1,
-      "username": "staffuser"
-    }
+    "expires_at": "2025-08-10T13:34:04Z"
   }
 }
 ```
@@ -283,7 +279,7 @@ curl -X POST http://localhost:8080/api/v1/patients/search \
   "success": false,
   "error": {
     "code": 403,
-    "message": "Access denied: Staff can only access patients from their own hospital"
+    "message": "invalid or expired token"
   }
 }
 ```
